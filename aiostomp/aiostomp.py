@@ -1,7 +1,6 @@
 import asyncio
 import functools
 import logging
-import uuid
 import os
 from typing import List, Dict, Optional, Any, Union, Deque, cast
 from ssl import SSLContext
@@ -102,7 +101,6 @@ class AioStomp:
         error_handler=None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
     ):
-
         self._heartbeat = {
             "enabled": heartbeat,
             "cx": heartbeat_interval_cx,
@@ -329,7 +327,6 @@ class StompReader(asyncio.Protocol):
         client_id: Optional[str] = None,
         stats: Optional[AioStompStats] = None,
     ):
-
         self.handlers_map = {
             "MESSAGE": self._handle_message,
             "CONNECTED": self._handle_connect,
@@ -354,8 +351,7 @@ class StompReader(asyncio.Protocol):
         self._connect_headers["accept-version"] = "1.1"
 
         if client_id is not None:
-            unique_id = uuid.uuid4()
-            self._connect_headers["client-id"] = f"{client_id}-{unique_id}"
+            self._connect_headers["client-id"] = client_id
 
         if self.heartbeat.get("enabled"):
             self._connect_headers["heart-beat"] = "{},{}".format(
@@ -450,9 +446,7 @@ class StompReader(asyncio.Protocol):
             if sy:
                 interval = max(self.heartbeat.get("cx", 0), sy)
                 logger.debug("Sending heartbeats every %sms", interval)
-                self.heartbeater = StompHeartbeater(
-                    self._transport, interval=interval
-                )
+                self.heartbeater = StompHeartbeater(self._transport, interval=interval)
                 await self.heartbeater.start()
 
     async def _handle_message(self, frame: Frame) -> None:
@@ -514,7 +508,6 @@ class StompProtocol:
         client_id: Optional[str] = None,
         stats: Optional[AioStompStats] = None,
     ):
-
         self.host = host
         self.port = port
         self.ssl_context = ssl_context
